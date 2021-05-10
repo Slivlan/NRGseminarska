@@ -10,7 +10,7 @@ namespace PathTracer
     {
         #region Methods
 
-        public void Render(PathTracerScene scene, PathTracerOptions options, IPathTracerFrameRecorder frameRecorder)
+        public void Render(PathTracerScene scene, PathTracerOptions options, IPathTracerFrameRecorder frameRecorder, float[,] pixelDifficulty = null)
         {
             // Preconditions
             if (scene == null)
@@ -51,8 +51,10 @@ namespace PathTracer
                 // Pixels
                 ParallelOptions parallelOptions = new ParallelOptions();
                 parallelOptions.MaxDegreeOfParallelism = options.MaxDegreeOfParallelism;
+                int skippedSamples = 0; //tole ne bo threadsafe, sam sej ni tok pomembno
                 Parallel.For(0, pixelCount, (pixelIndex) =>
                 {
+                    Random random = new Random((int)((1 + Thread.CurrentThread.ManagedThreadId) * DateTime.UtcNow.Ticks));
                     // Pixel Sample Rate
                     if (RandomHelper.RandomFloat() <= options.PixelSampleRate)
                     {
@@ -77,8 +79,18 @@ namespace PathTracer
 
                         // Samples
                         int samplesPerPixel = options.SamplesPerPixel;
+                        int samplesSkippedOnPixel = 0;
                         for (int sampleIndex = 0; sampleIndex < samplesPerPixel; sampleIndex++)
                         {
+                            //Difficulty check
+                            if(pixelDifficulty != null) {
+                                if(random.NextDouble() > pixelDifficulty[x, y]) {
+                                    skippedSamples++;
+                                    samplesSkippedOnPixel++;
+                                    continue;
+                                }
+                            }
+
                             // Mask
                             PathTracerColor mask = PathTracerColor.White;
 
@@ -261,7 +273,7 @@ namespace PathTracer
                         }
 
                         // Average Samples
-                        float floatSamplesPerPixel = (float) samplesPerPixel;
+                        float floatSamplesPerPixel = (float) samplesPerPixel - samplesSkippedOnPixel;
                         pixel = PathTracerColor.Divide(ref pixel, ref floatSamplesPerPixel);
 
                         // Fog
