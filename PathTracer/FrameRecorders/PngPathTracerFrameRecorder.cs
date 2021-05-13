@@ -30,11 +30,11 @@ namespace PathTracer.FrameRecorders
             this.Frame = new Image(width, height);
         }
 
-        public void Complete()
+        public string Complete()
         {
             if (this.Frame == null)
             {
-                return;
+                return null;
             }
             if (!Directory.Exists("Png"))
             {
@@ -44,6 +44,8 @@ namespace PathTracer.FrameRecorders
             {
                 this.Frame.SaveAsPng(fileStream);
             }
+
+            return Path.GetFullPath($"Png/{this.FrameNumber}.png");
         }
 
         public void SetPixel(int x, int y, PathTracerColor color)

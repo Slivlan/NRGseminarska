@@ -10,7 +10,7 @@ namespace PathTracer
     {
         #region Methods
 
-        public void Render(PathTracerScene scene, PathTracerOptions options, IPathTracerFrameRecorder frameRecorder, float[,] pixelDifficulty = null)
+        public (string, long) Render(PathTracerScene scene, PathTracerOptions options, IPathTracerFrameRecorder frameRecorder, float[,] pixelDifficulty = null)
         {
             // Preconditions
             if (scene == null)
@@ -30,6 +30,8 @@ namespace PathTracer
                 throw new ArgumentNullException();
             }
 
+            string framePNG = null;
+
             // Dimensions
             int width = options.Width;
             int height = options.Height;
@@ -37,6 +39,8 @@ namespace PathTracer
             // Pixel Count
             int pixelCount = width * height;
 
+
+            int skippedSamples = 0; //tole ne bo threadsafe, sam sej ni tok pomembno
             // Frames
             for (int frame = 0; frame < options.FrameCount; frame++)
             {
@@ -51,7 +55,7 @@ namespace PathTracer
                 // Pixels
                 ParallelOptions parallelOptions = new ParallelOptions();
                 parallelOptions.MaxDegreeOfParallelism = options.MaxDegreeOfParallelism;
-                int skippedSamples = 0; //tole ne bo threadsafe, sam sej ni tok pomembno
+                
                 Parallel.For(0, pixelCount, (pixelIndex) =>
                 {
                     Random random = new Random((int)((1 + Thread.CurrentThread.ManagedThreadId) * DateTime.UtcNow.Ticks));
@@ -85,7 +89,6 @@ namespace PathTracer
                             //Difficulty check
                             if(pixelDifficulty != null) {
                                 if(random.NextDouble() > pixelDifficulty[x, y]) {
-                                    skippedSamples++;
                                     samplesSkippedOnPixel++;
                                     continue;
                                 }
@@ -297,6 +300,7 @@ namespace PathTracer
 
                         // Set Pixel
                         frameRecorder.SetPixel(x, y, pixel);
+                        skippedSamples += samplesSkippedOnPixel;
                     }
 
                     // Increment
@@ -311,11 +315,15 @@ namespace PathTracer
                 options.PercentageDisplay?.Invoke(pixelCount, 1, stopwatch.Elapsed);
 
                 // Complete
-                frameRecorder.Complete();
+                framePNG = frameRecorder.Complete();
+                Console.WriteLine(framePNG);
+                Console.WriteLine("Skipped samples: {0}", skippedSamples);
 
                 // Frame Callback
                 scene.Animator?.Invoke(frame);
+
             }
+            return (framePNG, skippedSamples);
         }
 
         #endregion

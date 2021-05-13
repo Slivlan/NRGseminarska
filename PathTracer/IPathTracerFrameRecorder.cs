@@ -6,7 +6,7 @@
 
         void AddFrame(int width, int height);
 
-        void Complete();
+        string Complete();
 
         void SetPixel(int x, int y, PathTracerColor color);
 
