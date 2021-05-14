@@ -26,7 +26,7 @@ namespace PathTracer
             }
             Console.ForegroundColor = ConsoleColor.Gray;
             IPathTracerFrameRecorder frameRecorder = new PngPathTracerFrameRecorder();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1; i++)
             {
                 // Scene
                 PathTracerScene scene = new PathTracerScene();
@@ -158,12 +158,13 @@ namespace PathTracer
             MemoryStream stream = new MemoryStream();
 
             float[,] importanceMatrix = new float[render.Width, render.Height];
+            int[,] importanceNumOfJpegs = new int[render.Width, render.Height];
 
             int n = 20; //chunk size
             long uncompressedSize = n * n * 3;
-            //split the bitmap in nxn chunks
-            for (int x = 0; x < render.Width; x+=n) {
-                for (int y = 0; y < render.Height; y+=n) {
+            //split the bitmap in n/2 x n/2 chunks. They overlap.
+            for (int x = 0; x < render.Width; x+=n/2) {
+                for (int y = 0; y < render.Height; y+=n/2) {
                     Bitmap chunk = new Bitmap(n, n);
                     for (int i = 0; i < 20 && i+x < render.Width; i++) {
                         for (int j = 0; j < 20 && j+y < render.Height; j++) {
@@ -179,15 +180,41 @@ namespace PathTracer
                     //trivial importance assignment
                     for (int i = 0; i < 20 && i + x < render.Width; i++) {
                         for (int j = 0; j < 20 && j + y < render.Height; j++) {
-                            importanceMatrix[i + x, j + y] = importance;
+                            importanceMatrix[i + x, j + y] += importance;
+                            importanceNumOfJpegs[i + x, j + y]++;
                         }
                     }
 
                 }
             }
 
+            //povprecevanje glede na to v kolikih chunkih je dolocen pixel
+            float max = float.NegativeInfinity, min = float.PositiveInfinity;
+            for (int i = 0; i < importanceMatrix.GetLength(0); i++) {
+                for (int j = 0; j < importanceMatrix.GetLength(1); j++) {
+                    importanceMatrix[i, j] /= importanceNumOfJpegs[i, j];
+                    if(importanceMatrix[i,j] > max) {
+                        max = importanceMatrix[i, j];
+                    }
+                    if(importanceMatrix[i, j] < min) {
+                        min = importanceMatrix[i, j];
+                    }
+                }
+            }
+
+            NormalizeMatrix(importanceMatrix, min, max, minOutput: 0.1f);
             return importanceMatrix;
 
+        }
+
+
+        private static void NormalizeMatrix(float[,] data, float min, float max, float minOutput = 0f, float maxOutput = 1f) {
+
+            for (int i = 0; i < data.GetLength(0); i++) {
+                for (int j = 0; j < data.GetLength(1); j++) {
+                    data[i,j] = minOutput + ((data[i,j] - min) * (maxOutput - minOutput) / (max - min));
+                }
+            }
         }
 
         /// <summary>
