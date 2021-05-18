@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 
 namespace PathTracer
 {
@@ -8,6 +9,7 @@ namespace PathTracer
 
         public static void GenerateAbstract(PathTracerScene scene, Vector3 minimumBounds, Vector3 maximumBounds, int count, float alphaProbability, float lightProbability)
         {
+            
             for (int i = 0; i < count; i++)
             {
                 PathTracerMaterial material = new PathTracerMaterial();
@@ -43,7 +45,8 @@ namespace PathTracer
                 p2.X = RandomHelper.RandomFloat(minimumBounds.X, maximumBounds.X);
                 p2.Y = RandomHelper.RandomFloat(minimumBounds.Y, maximumBounds.Y);
                 p2.Z = RandomHelper.RandomFloat(minimumBounds.Z, maximumBounds.Z);
-                PathTracerTriangle triangle = new PathTracerTriangle(p0, p1, p2, material);
+                Bitmap tex = (Bitmap)Bitmap.FromFile(@"D:\checkerboard.jpeg").Clone();
+                PathTracerTriangle triangle = new PathTracerTriangle(p0, p1, p2, material, texture: tex);
                 scene.Triangles.Add(triangle);
             }
         }

@@ -36,7 +36,7 @@ namespace PathTracer
                 scene.Camera.Up = new Vector3(0, 1, 0);
                 scene.Camera.AntiAliased = true;
                 scene.BackgroundMaterial = new PathTracerMaterial();
-                scene.BackgroundMaterial.IsLight = true;
+                scene.BackgroundMaterial.IsLight = false;
                 scene.BackgroundMaterial.Color = new PathTracerColor(1, 20, 4, 4);
                 scene.FogColor = PathTracerColor.Black;
                 scene.FogDistance = 0;
@@ -45,7 +45,7 @@ namespace PathTracer
                 //PathTracerSceneGenerator.GenerateLightBox(scene, new Vector3(-200, -200, -200), new Vector3(200, 200, 200));
 
                 // Scene Generation (Abstract)
-                PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 100), 80, 0.1F, 0F);
+                PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 100), 80, 0.1F, 0.4F);
 
                 // Options
                 ConsolePercentageDisplay consolePercentageDisplay = new ConsolePercentageDisplay();

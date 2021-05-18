@@ -8,10 +8,13 @@ namespace PathTracer
 {
     public class PathTracerEngine
     {
+        private object textureLock;
         #region Methods
 
         public (string, long) Render(PathTracerScene scene, PathTracerOptions options, IPathTracerFrameRecorder frameRecorder, float[,] pixelDifficulty = null)
         {
+            object textureLock = new object();
+
             // Preconditions
             if (scene == null)
             {
@@ -128,6 +131,9 @@ namespace PathTracer
                                     PathTracerHit hit = triangle.GetHit(ray);
                                     if (hit.IsHit)
                                     {
+                                        lock (textureLock) {
+                                            hit.Material.Color = triangle.GetTextureColor(hit.Position);
+                                        }
                                         if (RandomHelper.RandomFloat() > hit.Material.Color.A)
                                         {
                                             continue;
