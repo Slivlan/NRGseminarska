@@ -135,7 +135,10 @@ namespace PathTracer
                 Vector2 onTriangle = GetRelativePointOnTriangle(hit);
                 int x = (int)(onTriangle.X * Texture.Width);
                 int y = (int)(onTriangle.Y * Texture.Height);
-                Color c = Texture.GetPixel(Math.Clamp(x, 0, Texture.Width-1), Math.Clamp(y, 0, Texture.Height - 1));
+                //Color c = Texture.GetPixel(Math.Clamp(x, 0, Texture.Width-1), Math.Clamp(y, 0, Texture.Height - 1));
+                Color c = Texture.GetPixel(x, y);
+                //Color c = Color.FromArgb((int)(onTriangle.X * 255), (int)(onTriangle.Y * 255), 0);
+                //Color c = Color.FromArgb((int)((hit.X+100)/200f*255f), (int)((hit.Y+100)/200f*255f), 0);
                 PathTracerColor pc = new PathTracerColor(Material.Color.A, c.R/255f, c.G/255f, c.B/255f);
                 return pc;
             }
@@ -149,7 +152,7 @@ namespace PathTracer
 
 
 
-            return new Vector2(x: Math.Abs(hit.X / (max.X - min.X)), y: Math.Abs(hit.Y / (max.Y - min.Y)));
+            return new Vector2(x: Math.Abs((hit.X - min.X) / (max.X - min.X)), y: Math.Abs((hit.Y - min.Y) / (max.Y - min.Y)));
         }
 
         #endregion

@@ -36,8 +36,8 @@ namespace PathTracer
                 scene.Camera.Up = new Vector3(0, 1, 0);
                 scene.Camera.AntiAliased = true;
                 scene.BackgroundMaterial = new PathTracerMaterial();
-                scene.BackgroundMaterial.IsLight = false;
-                scene.BackgroundMaterial.Color = new PathTracerColor(1, 20, 4, 4);
+                scene.BackgroundMaterial.IsLight = true;
+                scene.BackgroundMaterial.Color = new PathTracerColor(1, 1, 1, 1);
                 scene.FogColor = PathTracerColor.Black;
                 scene.FogDistance = 0;
 
@@ -45,29 +45,30 @@ namespace PathTracer
                 //PathTracerSceneGenerator.GenerateLightBox(scene, new Vector3(-200, -200, -200), new Vector3(200, 200, 200));
 
                 // Scene Generation (Abstract)
-                PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 100), 80, 0.1F, 0.4F);
+                PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 100), 80, 0.1F, 0F);
 
                 // Options
                 ConsolePercentageDisplay consolePercentageDisplay = new ConsolePercentageDisplay();
                 PathTracerOptions optionsLow = new PathTracerOptions();
-                optionsLow.Width = 800;
-                optionsLow.Height = 500;
-                optionsLow.BounceCount = 4;
+                optionsLow.Width = 600;
+                optionsLow.Height = 400;
+                optionsLow.BounceCount = 3;
                 optionsLow.SamplesPerPixel = 5;
                 optionsLow.FrameCount = 1;
-                optionsLow.MaxDegreeOfParallelism = 14;
+                optionsLow.MaxDegreeOfParallelism = 10;
                 optionsLow.PercentageDisplay = consolePercentageDisplay.Display;
-                optionsLow.RenderMode = PathTracerRenderMode.PathTracer;
+                //optionsLow.RenderMode = PathTracerRenderMode.PathTracer;
+                optionsLow.RenderMode = PathTracerRenderMode.Color;
                 optionsLow.PixelSampleRate = 1F;
 
                 consolePercentageDisplay = new ConsolePercentageDisplay();
                 PathTracerOptions optionsHigh = new PathTracerOptions();
-                optionsHigh.Width = 800;
-                optionsHigh.Height = 500;
-                optionsHigh.BounceCount = 8;
+                optionsHigh.Width = 600;
+                optionsHigh.Height = 400;
+                optionsHigh.BounceCount = 5;
                 optionsHigh.SamplesPerPixel = 100;
                 optionsHigh.FrameCount = 1;
-                optionsHigh.MaxDegreeOfParallelism = 14;
+                optionsHigh.MaxDegreeOfParallelism = 10;
                 optionsHigh.PercentageDisplay = consolePercentageDisplay.Display;
                 optionsHigh.RenderMode = PathTracerRenderMode.PathTracer;
                 optionsHigh.PixelSampleRate = 1F;

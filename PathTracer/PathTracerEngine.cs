@@ -124,16 +124,17 @@ namespace PathTracer
 
                                 // Material
                                 PathTracerMaterial material = scene.BackgroundMaterial;
-
+                                
+                                PathTracerTriangle minTriangle = scene.Triangles[0];
+                                PathTracerHit minHit = minTriangle.GetHit(ray);
+                                bool didHit = false;
                                 // Triangles
                                 foreach (PathTracerTriangle triangle in scene.Triangles)
                                 {
                                     PathTracerHit hit = triangle.GetHit(ray);
                                     if (hit.IsHit)
                                     {
-                                        lock (textureLock) {
-                                            hit.Material.Color = triangle.GetTextureColor(hit.Position);
-                                        }
+                                        
                                         if (RandomHelper.RandomFloat() > hit.Material.Color.A)
                                         {
                                             continue;
@@ -152,8 +153,17 @@ namespace PathTracer
 
                                             // Material
                                             material = hit.Material;
+
+                                            minHit = hit;
+                                            minTriangle = triangle;
+                                            didHit = true;
                                         }
                                     }
+                                }
+
+                                lock (textureLock) {
+                                    if(didHit)
+                                        material.Color = minTriangle.GetTextureColor(minHit.Position);
                                 }
 
                                 // Depth
