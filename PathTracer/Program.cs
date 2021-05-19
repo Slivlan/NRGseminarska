@@ -57,8 +57,8 @@ namespace PathTracer
                 optionsLow.FrameCount = 1;
                 optionsLow.MaxDegreeOfParallelism = 10;
                 optionsLow.PercentageDisplay = consolePercentageDisplay.Display;
-                //optionsLow.RenderMode = PathTracerRenderMode.PathTracer;
-                optionsLow.RenderMode = PathTracerRenderMode.Color;
+                optionsLow.RenderMode = PathTracerRenderMode.PathTracer;
+                //optionsLow.RenderMode = PathTracerRenderMode.Color;
                 optionsLow.PixelSampleRate = 1F;
 
                 consolePercentageDisplay = new ConsolePercentageDisplay();
@@ -78,10 +78,37 @@ namespace PathTracer
 
                 Stopwatch sw = new Stopwatch();
 
-                // Render
+                // Render image, albedo and normals
                 Console.WriteLine("Low quality render: ");
                 var (path, skippedSamples) = engine.Render(scene, optionsLow, frameRecorder);
-                float[,] estimatedDifficulty = EstimatePixelDifficulty(path);
+                string renderPath = Path.Combine(Path.GetDirectoryName(path), "render.png");
+                File.Move(path, renderPath);
+
+                Console.WriteLine("Low quality render albedo: ");
+                optionsLow.RenderMode = PathTracerRenderMode.Color;
+                (path, skippedSamples) = engine.Render(scene, optionsLow, frameRecorder);
+                string albedoPath = Path.Combine(Path.GetDirectoryName(path), "albedo.png");
+                File.Move(path, albedoPath);
+
+                Console.WriteLine("Low quality render normals: ");
+                optionsLow.RenderMode = PathTracerRenderMode.Normals;
+                (path, skippedSamples) = engine.Render(scene, optionsLow, frameRecorder);
+                string normalsPath = Path.Combine(Path.GetDirectoryName(path), "normals.png");
+                File.Move(path, normalsPath);
+
+                //call denoising process. Denoiser_v1.5 must be unpacked in bin directory. 
+                string denoisedPath = Path.Combine(Path.GetDirectoryName(path), "denoised.png");
+                ProcessStartInfo si = new ProcessStartInfo();
+                si.FileName = @"./Denoiser_v1.5/Denoiser.exe";
+                si.Arguments = "-i " + renderPath + " -o " + denoisedPath + " -a " + albedoPath + " -n " + normalsPath;
+                Process denoiseProcess = Process.Start(si);
+
+                //wait for denoising to finish
+                while (!denoiseProcess.HasExited) {
+                    denoiseProcess.WaitForExit();
+                }
+
+                float[,] estimatedDifficulty = EstimatePixelDifficulty(denoisedPath);
                 CreateDifficultyImage(estimatedDifficulty, Path.GetDirectoryName(path));
                 
                 Console.WriteLine("High quality render with difficulties: ");
@@ -115,7 +142,21 @@ namespace PathTracer
                 sw.Stop();
                 long full = sw.ElapsedMilliseconds;
 
-                Console.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}", hDiff, custom, full);
+                Console.WriteLine("Groundtruth: ");
+                consolePercentageDisplay = new ConsolePercentageDisplay();
+                optionsHigh.PercentageDisplay = consolePercentageDisplay.Display;
+                optionsHigh.SamplesPerPixel = 1000;
+                sw.Reset();
+                sw.Start();
+                engine.Render(scene, optionsHigh, frameRecorder);
+                sw.Stop();
+                long groundtruth = sw.ElapsedMilliseconds;
+
+                using (StreamWriter bw = new StreamWriter(File.Create(Path.Combine(Path.GetDirectoryName(path), "stats.txt")))) {
+                    bw.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}\nGroundtruth: {3}", hDiff, custom, full, groundtruth);
+                    bw.Close();
+                }
+                Console.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}\nGroundtruth: {3}", hDiff, custom, full, groundtruth);
             }
 
             // Done
