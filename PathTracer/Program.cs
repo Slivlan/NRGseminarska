@@ -92,7 +92,8 @@ namespace PathTracer
                 scene.ReadObject(@"D:\Scene\scena1\vaza.obj", material: vazaMaterial, texturePath: @"D:\textures\marble.jpg");*/
 
                 //scena2
-                Scene1(scene);
+                //Scene1(scene);
+                ScenaSKroglo(scene);
 
                 /*PathTracerMaterial yMaterial = new PathTracerMaterial();
                 PathTracerColor green = new PathTracerColor(1, 0, 1, 0);
@@ -258,6 +259,55 @@ namespace PathTracer
             Console.ReadLine();
         }
 
+        private static void ScenaSKroglo(PathTracerScene scene) {
+
+            PathTracerColor neutral = new PathTracerColor(1f, 0.5f, 0.5f, 0.5f);
+
+            PathTracerMaterial mizaMaterial = new PathTracerMaterial();
+            mizaMaterial.Reflectivity = 0.3f;
+            mizaMaterial.Gloss = 0.6f;
+            mizaMaterial.Color = neutral;
+            scene.ReadObject(@"D:\Scene\scena2\miza2.obj", texturePath: @"D:\textures\darkwood.jpg", material: mizaMaterial);
+
+            PathTracerMaterial stene = new PathTracerMaterial();
+            stene.Reflectivity = 0f;
+            stene.Gloss = 0f;
+            stene.Color = neutral;
+            scene.ReadObject(@"D:\Scene\scena2\zid.obj", texturePath: @"D:\textures\stena2.jpg", material: stene);
+
+            PathTracerMaterial okno = new PathTracerMaterial();
+            okno.Reflectivity = 0.1f;
+            okno.Gloss = 0.1f;
+            okno.Color = new PathTracerColor(1, 0.8f, 0.8f, 0.8f);
+            scene.ReadObject(@"D:\Scene\scena2\okno.obj", material: okno);
+
+            PathTracerMaterial tla = new PathTracerMaterial();
+            tla.Reflectivity = 0.1f;
+            tla.Gloss = 0.4f;
+            tla.Color = new PathTracerColor(1, 0.8f, 0.8f, 0.8f);
+            scene.ReadObject(@"D:\Scene\scena2\tla.obj", texturePath: @"D:\textures\wood.jpg", material: tla);
+
+            PathTracerMaterial material = new PathTracerMaterial();
+            material.Color = new PathTracerColor(1, 0, 0, 0.8f);
+            material.Reflectivity = 1;
+            material.Gloss = 1;
+            material.IsLight = false;
+            PathTracerSphere krogla = new PathTracerSphere(2f, new Vector3(15, -0.5f, 1), material);
+            scene.Spheres.Add(krogla);
+
+            PathTracerMaterial material2 = new PathTracerMaterial();
+            material2.Color = new PathTracerColor(1, 0.9f, 0.2f, 0.2f);
+            material2.IsLight = false;
+            PathTracerSphere krogla2 = new PathTracerSphere(2f, new Vector3(13, -0.4f, -2), material2);
+            scene.Spheres.Add(krogla2);
+
+            PathTracerMaterial material3 = new PathTracerMaterial();
+            material3.Color = new PathTracerColor(1, 10, 10, 10);
+            material3.IsLight = true;
+            PathTracerSphere krogla3 = new PathTracerSphere(2f, new Vector3(10, 4f, -5), material3);
+            scene.Spheres.Add(krogla3);
+        }
+
         private static void Scene1 (PathTracerScene scene) {
             PathTracerColor neutral = new PathTracerColor(1f, 0.5f, 0.5f, 0.5f);
 
@@ -311,6 +361,8 @@ namespace PathTracer
             tla.Color = new PathTracerColor(1, 0.8f, 0.8f, 0.8f);
             scene.ReadObject(@"D:\Scene\scena2\tla.obj", texturePath: @"D:\textures\wood.jpg", material: tla);
         }
+
+
 
         private static string Denoise(string renderPath, string albedoPath, string normalsPath, string outputPath) {
             //call denoising process. Denoiser_v1.5 must be unpacked in bin directory. 

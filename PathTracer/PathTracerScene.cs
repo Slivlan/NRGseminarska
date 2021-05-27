@@ -12,6 +12,7 @@ namespace PathTracer
         public PathTracerScene()
         {
             this.Triangles = new List<PathTracerTriangle>();
+            this.Spheres = new List<PathTracerSphere>();
         }
 
         #endregion
@@ -29,6 +30,8 @@ namespace PathTracer
         public float FogDistance { get; set; }
 
         public List<PathTracerTriangle> Triangles { get; set; }
+
+        public List<PathTracerSphere> Spheres { get; set; }
 
         #endregion
 
