@@ -161,7 +161,7 @@ namespace PathTracer
                                     }
                                 }
 
-                                lock (textureLock) {
+                                lock (minTriangle.textureLock) {
                                     if(didHit)
                                         material.Color = minTriangle.GetTextureColor(minHit.Position);
                                 }

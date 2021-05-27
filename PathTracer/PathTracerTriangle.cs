@@ -13,7 +13,8 @@ namespace PathTracer
             this.V2 = v2;
             this.Material = material;
             this.Clockwise = clockwise;
-            this.Texture = (Bitmap)texture.Clone();
+            this.Texture = texture != null ? (Bitmap)texture.Clone() : null;
+            this.textureLock = new object();
         }
 
         #endregion
@@ -31,6 +32,8 @@ namespace PathTracer
         public Vector3 V2;
 
         readonly Bitmap Texture;
+
+        public object textureLock;
 
         #endregion
 
@@ -136,7 +139,7 @@ namespace PathTracer
                 int x = (int)(onTriangle.X * Texture.Width);
                 int y = (int)(onTriangle.Y * Texture.Height);
                 //Color c = Texture.GetPixel(Math.Clamp(x, 0, Texture.Width-1), Math.Clamp(y, 0, Texture.Height - 1));
-                Color c = Texture.GetPixel(x, y);
+                Color c = Texture.GetPixel(Math.Min(x, Texture.Width - 1), Math.Min(Texture.Height - 1, y));
                 //Color c = Color.FromArgb((int)(onTriangle.X * 255), (int)(onTriangle.Y * 255), 0);
                 //Color c = Color.FromArgb((int)((hit.X+100)/200f*255f), (int)((hit.Y+100)/200f*255f), 0);
                 PathTracerColor pc = new PathTracerColor(Material.Color.A, c.R/255f, c.G/255f, c.B/255f);
@@ -148,7 +151,11 @@ namespace PathTracer
         //tole ni niti blizu pravega texture mappinga, sam whatever
         private Vector2 GetRelativePointOnTriangle(Vector3 hit) {
             Vector2 min = new Vector2(x: Math.Min(V0.X, Math.Min(V1.X, V2.X)), y: Math.Min(V0.Y, Math.Min(V1.Y, V2.Y)));
+            min.X -= 0.0001f; //hack za preprecevanje div with 0
+            min.Y -= 0.0001f;
             Vector2 max = new Vector2(x: Math.Max(V0.X, Math.Max(V1.X, V2.X)), y: Math.Max(V0.Y, Math.Max(V1.Y, V2.Y)));
+            max.X += 0.0001f;
+            max.Y += 0.0001f;
 
 
 
