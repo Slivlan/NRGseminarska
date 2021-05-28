@@ -41,8 +41,8 @@ namespace PathTracer
                 // Scene
                 PathTracerScene scene = new PathTracerScene();
                 scene.Camera = new PathTracerCamera();
-                scene.Camera.Position = new Vector3(0, 0, 0);
-                scene.Camera.Direction = new Vector3(1, 0, 0);
+                scene.Camera.Position = new Vector3(0, 0, 100);
+                scene.Camera.Direction = new Vector3(0, 0, -100);
                 scene.Camera.Up = new Vector3(0, 1, 0);
                 scene.Camera.AntiAliased = true;
                 scene.Camera.HorizontalFieldOfView = AngleHelper.ToRadians(30);
@@ -56,7 +56,7 @@ namespace PathTracer
                 //PathTracerSceneGenerator.GenerateLightBox(scene, new Vector3(-1000, -1000, -1000), new Vector3(1200, 1200, 1200));
 
                 // Scene Generation (Abstract)
-                //PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 100), 30, 0.1F, 0F);
+                PathTracerSceneGenerator.GenerateAbstract(scene, new Vector3(-100, -100, -100), new Vector3(100, 100, 80), 20, 0.1F, 0.2F);
                 Console.WriteLine("Reading objects");
 
 
@@ -93,7 +93,7 @@ namespace PathTracer
 
                 //scena2
                 //Scene1(scene);
-                ScenaSKroglo(scene);
+                //ScenaSKroglo(scene);
 
                 /*PathTracerMaterial yMaterial = new PathTracerMaterial();
                 PathTracerColor green = new PathTracerColor(1, 0, 1, 0);
@@ -178,7 +178,32 @@ namespace PathTracer
 
                 float[,] estimatedDifficulty = EstimatePixelDifficulty(denoisedPath);
                 CreateDifficultyImage(estimatedDifficulty, Path.GetDirectoryName(path));
+
+                Console.WriteLine("Starting renders with increasing max sample rate.");
+                for (int s = 10; s < 200; s+=10) {
+                    consolePercentageDisplay = new ConsolePercentageDisplay();
+                    optionsHigh.SamplesPerPixel = s;
+                    Console.WriteLine("Sample rate " + s);
+                    (path, skippedSamples) = engine.Render(scene, optionsHigh, frameRecorder, estimatedDifficulty);
+                    string focusedPath = Path.Combine(Path.GetDirectoryName(path), s + "-samples-focused.png");
+                    if (File.Exists(focusedPath))
+                        File.Delete(focusedPath);
+                    File.Move(path, focusedPath);
+                    Denoise(focusedPath, albedoPath, normalsPath, Path.Combine(Path.GetDirectoryName(path), s + "-samples-focused-denoised.png"));
+
+                    float samplesPerPixel = (optionsHigh.Width * optionsHigh.Height * optionsHigh.SamplesPerPixel - (float)skippedSamples) / (float)(optionsHigh.Width * optionsHigh.Height);
+                    optionsHigh.SamplesPerPixel = (int)samplesPerPixel + 1;
+                    consolePercentageDisplay = new ConsolePercentageDisplay();
+                    (path, skippedSamples) = engine.Render(scene, optionsHigh, frameRecorder);
+                    focusedPath = Path.Combine(Path.GetDirectoryName(path), s + "-" + optionsHigh.SamplesPerPixel + "-samples-unfocused.png");
+                    if (File.Exists(focusedPath))
+                        File.Delete(focusedPath);
+                    File.Move(path, focusedPath);
+                    Denoise(focusedPath, albedoPath, normalsPath, Path.Combine(Path.GetDirectoryName(path), s + "-samples-unfocused-denoised.png"));
+                }
                 
+                
+                /*
                 Console.WriteLine("High quality render with difficulties: ");
                 sw.Start();
                 (path, skippedSamples) = engine.Render(scene, optionsHigh, frameRecorder, estimatedDifficulty);
@@ -212,7 +237,7 @@ namespace PathTracer
                 File.Move(path, sameSampleRatePath);
 
                 string ssrDenoised = Denoise(sameSampleRatePath, albedoPath, normalsPath, Path.Combine(Path.GetDirectoryName(path), "ssr-denoised.png"));
-
+                */
                 Console.WriteLine("High quality rendering, without difficulties: ");
                 consolePercentageDisplay = new ConsolePercentageDisplay();
                 optionsHigh.PercentageDisplay = consolePercentageDisplay.Display;
@@ -246,11 +271,11 @@ namespace PathTracer
 
                 string groundtruthDenoised = Denoise(groundtruthPath, albedoPath, normalsPath, Path.Combine(Path.GetDirectoryName(path), "groundtruth-denoised.png"));
                 */
-                using (StreamWriter bw = new StreamWriter(File.Create(Path.Combine(Path.GetDirectoryName(path), "stats.txt")))) {
+                /*using (StreamWriter bw = new StreamWriter(File.Create(Path.Combine(Path.GetDirectoryName(path), "stats.txt")))) {
                     bw.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}\n", hDiff, custom, full);
                     bw.Close();
                 }
-                Console.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}\n", hDiff, custom, full);
+                Console.WriteLine("Elapsed milliseconds:\nWith focused rendering: {0}\nNo focus, similar number of samples: {1}\nWithout focused rendering, all samples: {2}\n", hDiff, custom, full);*/
             }
 
             // Done

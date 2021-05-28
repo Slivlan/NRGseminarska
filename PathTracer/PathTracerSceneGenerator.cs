@@ -47,10 +47,10 @@ namespace PathTracer
                 p2.X = RandomHelper.RandomFloat(minimumBounds.X, maximumBounds.X);
                 p2.Y = RandomHelper.RandomFloat(minimumBounds.Y, maximumBounds.Y);
                 p2.Z = RandomHelper.RandomFloat(minimumBounds.Z, maximumBounds.Z);
-                string[] texturePaths = Directory.GetFiles(@"D:\textures");
+                /*string[] texturePaths = Directory.GetFiles(@"D:\textures");
                 
-                Bitmap tex = (Bitmap)Bitmap.FromFile(texturePaths[Math.Min(texturePaths.Length-1, (int)(RandomHelper.RandomFloat() * texturePaths.Length))]).Clone();
-                PathTracerTriangle triangle = new PathTracerTriangle(p0, p1, p2, material, texture: tex);
+                Bitmap tex = (Bitmap)Bitmap.FromFile(texturePaths[Math.Min(texturePaths.Length-1, (int)(RandomHelper.RandomFloat() * texturePaths.Length))]).Clone();*/
+                PathTracerTriangle triangle = new PathTracerTriangle(p0, p1, p2, material);
                 scene.Triangles.Add(triangle);
             }
         }
